@@ -1,2 +1,8 @@
 # TBD
-COSC412 Group Project
+SyllabiXtract
+
+Richard Savoca
+Brendon Young
+William Nwafor
+Yhannes Belai
+Sinit Mebrahtom 
