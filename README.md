@@ -1,4 +1,3 @@
-# TBD
 SyllabiXtract
 
 Richard Savoca
