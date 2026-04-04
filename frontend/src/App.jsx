@@ -1,121 +1,167 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
 
+/**
+ * SyllabiXtract Starter Template
+ * This component handles:
+ * 1. File selection (PDF only)
+ * 2. Uploading to the FastAPI backend on local host for testing
+ * 3. Displaying the raw JSON response from local host
+ */
 function App() {
-  const [count, setCount] = useState(0)
+  const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [extractedData, setExtractedData] = useState(null);
+
+  // 1. Capture the file from the input
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile && selectedFile.type === "application/pdf") {
+      setFile(selectedFile);
+    } else {
+      alert("Please select a valid PDF file.");
+    }
+  };
+
+  // 2. Ship the file to the backend
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Select a syllabus first!");
+      return;
+    }
+
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      // NOTE: Replace this URL with the actual Render backend URL once deployed
+      const response = await fetch('http://127.0.0.1:8000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Backend upload failed');
+
+      const data = await response.json();
+      setExtractedData(data); // This is where Gemini's JSON will live
+    } catch (error) {
+      console.error("Upload Error:", error);
+      alert("Failed to reach the backend. Is your Render server awake?");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+    <div style={styles.container}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>SyllabiXtract</h1>
+        <p>Convert your messy syllabus into an organized calendar in seconds.</p>
+      </header>
+
+      <main style={styles.uploadCard}>
+        <div style={styles.dropZone}>
+          <input 
+            type="file" 
+            accept=".pdf" 
+            onChange={handleFileChange} 
+            style={styles.fileInput}
+          />
+          <p style={styles.fileHint}>
+            {file ? `Selected: ${file.name}` : "Click to select your syllabus PDF"}
           </p>
         </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+
+        <button 
+          onClick={handleUpload} 
+          disabled={isUploading}
+          style={{
+            ...styles.button,
+            backgroundColor: isUploading ? '#ccc' : '#007bff'
+          }}
         >
-          Count is {count}
+          {isUploading ? 'Processing with Gemini...' : 'Extract Schedule'}
         </button>
-      </section>
+      </main>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Preview Section: This is where we'll later build the visual calendar */}
+      {extractedData && (
+        <section style={styles.resultsSection}>
+          <h3>Extracted Schedule Data</h3>
+          <pre style={styles.jsonPreview}>
+            {JSON.stringify(extractedData, null, 2)}
+          </pre>
+        </section>
+      )}
+    </div>
+  );
 }
 
-export default App
+// Some basic Styles
+const styles = {
+  container: {
+    maxWidth: '800px',
+    margin: '40px auto',
+    padding: '0 20px',
+    fontFamily: 'system-ui, sans-serif',
+    color: '#333'
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: '40px'
+  },
+  title: {
+    fontSize: '2.5rem',
+    color: '#007bff',
+    marginBottom: '10px'
+  },
+  uploadCard: {
+    background: '#f9f9f9',
+    padding: '30px',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    textAlign: 'center'
+  },
+  dropZone: {
+    border: '2px dashed #007bff',
+    padding: '40px',
+    borderRadius: '8px',
+    marginBottom: '20px',
+    backgroundColor: '#fff',
+    cursor: 'pointer'
+  },
+  fileInput: {
+    marginBottom: '10px'
+  },
+  fileHint: {
+    fontSize: '0.9rem',
+    color: '#666'
+  },
+  button: {
+    padding: '12px 24px',
+    fontSize: '1rem',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s'
+  },
+  resultsSection: {
+    marginTop: '40px',
+    padding: '20px',
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '8px'
+  },
+  jsonPreview: {
+    fontSize: '0.85rem',
+    backgroundColor: '#2d2d2d',
+    color: '#f8f8f2',
+    padding: '15px',
+    borderRadius: '6px',
+    overflowX: 'auto'
+  }
+};
+
+export default App;
