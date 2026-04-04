@@ -6,9 +6,10 @@ app = FastAPI(title="SyllabiXtract API")
 
 # Configure CORS (Cross-Origin Resource Sharing)
 # This allows the React frontend (on localhost or Vercel) to talk to this backend
+# Tell the backend to accept requests from the internet
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, change this to the Vercel URL
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
