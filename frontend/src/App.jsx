@@ -4,8 +4,8 @@ import React, { useState } from 'react';
  * SyllabiXtract Starter Template
  * This component handles:
  * 1. File selection (PDF only)
- * 2. Uploading to the FastAPI backend on local host for testing
- * 3. Displaying the raw JSON response from local host
+ * 2. Uploading to the backend on Render for testing
+ * 3. Displaying the raw JSON response from Vercel
  */
 function App() {
   const [file, setFile] = useState(null);
@@ -22,7 +22,7 @@ function App() {
     }
   };
 
-  // 2. Ship the file to the backend
+  // Ship the file to the backend
   const handleUpload = async () => {
     if (!file) {
       alert("Select a syllabus first!");
@@ -35,7 +35,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      // NOTE: Replace this URL with the actual Render backend URL once deployed
+      // This url allows render to deploy the backend.
       const response = await fetch('https://syllabixtract-api.onrender.com/upload', {
         method: 'POST',
         body: formData,
